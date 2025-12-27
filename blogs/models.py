@@ -30,6 +30,32 @@ class Blog(models.Model):
     is_featured = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add= True)
     updated_at = models.DateTimeField(auto_now= True)
-      
+    
+    
     def __str__(self):
         return self.title
+
+class About(models.Model):
+    about = models.TextField(default="About coming soon")
+    about_description = models.TextField(max_length=2555,default="no description allowed")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name_plural = 'About'
+        
+    def __str__(self):
+        return self.about
+    
+class SocialLinks(models.Model):
+    platform = models.CharField(max_length=25)
+    link = models.URLField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+        
+    
+    class Meta:
+        verbose_name_plural = 'Social Links'
+    
+    def __str__(self):
+        return self.platform

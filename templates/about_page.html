@@ -1,0 +1,10 @@
+{%extends 'base.html'%}
+{%block content%}
+
+{% for a in about%}
+<h1 class="fw-bolder mb-1">{{ a.about}}</h1>
+
+<h3 class="fw-bolder mb-3">{{ a.about_description}}</h3>
+{%endfor%}
+
+{%endblock%}
