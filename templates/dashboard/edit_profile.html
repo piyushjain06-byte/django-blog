@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<main role="main" class="container mt-5">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        {% include 'dashboard/sidebar.html' %}
+        
+        <!-- Main Content Area -->
+        <div class="col-md-9">
+            <h2 class="mb-4 pt-4 border-bottom pb-2">Edit Your Profile</h2>
+            <div class="card border-0 shadow-sm p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <h4 class="mb-3">Personal Information</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ user_form.first_name|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ user_form.last_name|as_crispy_field }}
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            {{ user_form.email|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h4 class="mb-3">Profile Details</h4>
+                    <div class="mb-3">
+                        {% if profile_form.instance.profile_picture %}
+                            <div class="mb-2">
+                                <img src="{{ profile_form.instance.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                            </div>
+                        {% endif %}
+                        {{ profile_form.profile_picture|as_crispy_field }}
+                    </div>
+                    <div class="mb-3">
+                        {{ profile_form.bio|as_crispy_field }}
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h4 class="mb-3">Social Links</h4>
+                    <div class="mb-3">
+                        {{ profile_form.facebook_link|as_crispy_field }}
+                    </div>
+                    <div class="mb-3">
+                        {{ profile_form.twitter_link|as_crispy_field }}
+                    </div>
+                    <div class="mb-3">
+                        {{ profile_form.instagram_link|as_crispy_field }}
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary px-4 ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

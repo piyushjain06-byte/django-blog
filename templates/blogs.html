@@ -1,92 +1,120 @@
 {% extends 'base.html' %}
 
-{%block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Post content-->
-            <article>
-                <!-- Post header-->
-                <header class="mb-4">
-                    <!-- Post title-->
-                    <h1 class="fw-bolder mb-1">{{single_blog.title}}</h1>
-                    <!-- Post meta content-->
-                    <div class="text-muted fst-italic mb-2">{{single_blog.created_at | timesince}} ago | {{ single_blog.author }}</div>
-                    <!-- Post category-->
-                    <a class="badge bg-warning text-decoration-none text-light" href="#!">{{single_blog.category}}</a>
-                </header>
-                <!-- Preview image figure-->
-                <figure class="mb-4"><img class="img-fluid rounded" src="{{single_blog.featured_image.url}}" alt="..." /></figure>
-                <!-- Post content-->
-                <section class="mb-5">
-                    <h5 class="fs-5 mb-4">{{single_blog.short_description}}</h5>
-                    <p class="fs-5 mb-4">{{single_blog.blog_body}}</p>
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-10">
+        <!-- Post content -->
+        <article class="bg-white p-4 p-md-5 rounded shadow-sm border-0 mb-5">
+            <!-- Post header -->
+            <header class="mb-5 text-center px-md-5">
+                <a class="badge bg-warning text-dark text-uppercase px-3 py-2 mb-4 rounded-pill shadow-sm text-decoration-none" href="{% url 'posts_by_category' single_blog.category.id %}"><i class="fa fa-folder-open-o mr-1"></i> {{ single_blog.category }}</a>
+                <h1 class="font-weight-bold mb-4" style="font-family: var(--font-heading); font-size: 3.5rem; letter-spacing: -0.02em; line-height: 1.1;">{{ single_blog.title }}</h1>
+                
+                <div class="d-flex justify-content-center align-items-center text-muted flex-wrap">
+                    {% if single_blog.author.userprofile.profile_picture %}
+                    <img src="{{ single_blog.author.userprofile.profile_picture.url }}" alt="Avatar" class="rounded-circle shadow-sm mr-2" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ single_blog.author.username }}&background=random" alt="Avatar" class="rounded-circle shadow-sm mr-2" style="width: 40px; height: 40px;">
+                    {% endif %}
+                    <span class="font-weight-bold ml-1 mr-3"><a href="{% url 'author_profile' single_blog.author.username %}" class="text-dark">{{ single_blog.author.get_full_name|default:single_blog.author.username }}</a></span>
+                    <span class="mr-3"><i class="fa fa-circle" style="font-size: 5px;"></i></span>
+                    <span class="mr-3">{{ single_blog.created_at|date:"F j, Y" }}</span>
+                </div>
+            </header>
 
-                    <!--Comments-->
-                    <h4> Comments({{comment_count}})</h4>
+            <!-- Preview image -->
+            {% if single_blog.featured_image %}
+            <figure class="mb-5">
+                <img class="img-fluid rounded shadow-lg w-100" src="{{ single_blog.featured_image.url }}" alt="{{ single_blog.title }}" style="max-height: 600px; object-fit: cover;" />
+            </figure>
+            {% endif %}
+
+            <!-- Post body -->
+            <section class="mb-5 px-md-4" style="font-size: 1.2rem; line-height: 1.9; color: #374151;">
+                <p class="lead font-weight-normal mb-5 py-3 border-left border-warning" style="font-size: 1.4rem; padding-left: 20px; font-style: italic;">
+                    {{ single_blog.short_description }}
+                </p>
+                <div class="content-body">
+                    {{ single_blog.blog_body|linebreaks }}
+                </div>
+            </section>
+
+            <!-- Social Actions -->
+            <div class="d-flex align-items-center justify-content-between border-top border-bottom py-4 mb-5 px-md-4 bg-light rounded shadow-sm">
+                <div class="d-flex align-items-center">
+                    <span class="btn btn-light px-4 mr-3 font-weight-bold rounded-pill shadow-sm" style="pointer-events: none;">
+                        <i class="fa fa-eye text-primary"></i> <span class="ml-1">{{ single_blog.views_count }} Views</span>
+                    </span>
+                    
+                    <form action="{% url 'like_post' single_blog.id %}" method="POST" class="d-inline mr-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn {% if is_liked %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill px-4 shadow-sm font-weight-bold transition-transform">
+                            <i class="fa {% if is_liked %}fa-heart{% else %}fa-heart-o{% endif %}"></i> 
+                            <span class="ml-1">{{ single_blog.likes.count }} Likes</span>
+                        </button>
+                    </form>
+                </div>
+
+                <form action="{% url 'bookmark_post' single_blog.id %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if is_bookmarked %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4 shadow-sm font-weight-bold transition-transform">
+                        <i class="fa {% if is_bookmarked %}fa-bookmark{% else %}fa-bookmark-o{% endif %}"></i> 
+                        <span class="ml-1">{% if is_bookmarked %}Saved to Read{% else %}Save Article{% endif %}</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Comments Section -->
+            <section class="px-md-4">
+                <h3 class="font-weight-bold mb-4 pb-2 border-bottom">Discussion ({{ comment_count }})</h3>
+                
+                {% if user.is_authenticated %}
+                <div class="mb-5 p-4 bg-light rounded shadow-sm">
+                    <h5 class="font-weight-bold mb-3">Leave a Reply</h5>
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <textarea name="comment" rows="4" class="form-control rounded order-0" placeholder="What are your thoughts?" required style="resize: none;"></textarea>
+                        </div>
+                        <div class="text-right mt-2">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm font-weight-bold">Post Comment</button>
+                        </div>
+                    </form>
+                </div>
+                {% else %}
+                <div class="alert alert-warning rounded shadow-sm mb-5 text-center p-4">
+                    <i class="fa fa-lock fa-2x mb-2 text-warning"></i>
+                    <h5 class="mb-0">Please <a href="{% url 'login' %}?next={{ request.path }}" class="text-decoration-underline font-weight-bold">Log In</a> to join the discussion!</h5>
+                </div>
+                {% endif %}
+
+                <div class="comments-list">
                     {% if comments %}
                         {% for comment in comments %}
-                            <div class="card mt-1">
-                                <div class="card-body">
-                                    <p class ="card-text mb-0">{{comment}}</p>
-                                    <span>
-                                        <small>By {{comment.user}}</small>
-                                        <small> | {{comment.created_at | timesince}}ago</small>
-                                    </span>
-                                </div>
+                        <div class="media mb-4 p-4 border rounded shadow-sm bg-white">
+                            {% if comment.user.userprofile.profile_picture %}
+                            <img src="{{ comment.user.userprofile.profile_picture.url }}" alt="Avatar" class="mr-3 rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <img src="https://ui-avatars.com/api/?name={{ comment.user.username }}&background=random" alt="Avatar" class="mr-3 rounded-circle shadow-sm" style="width: 50px; height: 50px;">
+                            {% endif %}
+                            
+                            <div class="media-body">
+                                <h5 class="mt-0 mb-1 font-weight-bold text-dark">{{ comment.user.get_full_name|default:comment.user.username }}</h5>
+                                <div class="text-muted small mb-2"><i class="fa fa-clock-o"></i> {{ comment.created_at|date:"M d, Y" }} at {{ comment.created_at|time:"H:i" }}</div>
+                                <p class="mb-0" style="color: #4b5563;">{{ comment.comment }}</p>
                             </div>
-                        {% endfor %}
-                    {% else%}
-                    No comments 
-                    {%endif%}
-                    <br>
-                    <div class="form-group">
-                        {% if user.is_authenticated %}
-                        <form action="" method="POST">
-                            {% csrf_token%}
-                            <div class="form-group">
-                                <textarea name ="comment" class="form-control" placeholder="write your comment"></textarea>
-                                <input type="submit" value="Submit" class="btn btn-primary mt-2">
-                            </div>
-                        </form>
-                        {%else%}
-                        <h6><p> Please <span><a href="{%url 'login' %}">Login</a></span> to to comment!</p></h6>
-                        {%endif%}
-                    </div>
-                    </section>
-            </article>
-        </div>
-        <!-- Side widgets-->
-        <div class="col-lg-4">
-           
-            <!-- Categories widget-->
-            <div class="card mb-4 p-3">
-                <h4 class="font-italic">Categories</h4>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <ul class="list-unstyled mb-0">
-                                {% for cat in categories%}
-                                <li><a href="{% url 'posts_by_category' cat.id %}">{{ cat.Category_name }}</a></li>
-                                {%endfor%}
-                            </ul>
                         </div>
-                        
-                    </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center p-5 bg-light rounded border text-muted">
+                            <i class="fa fa-comments-o fa-3x mb-3"></i>
+                            <h4>No comments yet</h4>
+                            <p>Be the first to share your thoughts!</p>
+                        </div>
+                    {% endif %}
                 </div>
-            </div>
-            <!-- Side widget-->
-            {% if  social_links %}
-              <div class="card mb-4 p-3">
-            <h4 class="font-italic">Follow Us</h4>
-            <ol class="list-unstyled">
-                {%for i in social_links%}
-              <li><a href="{{i.link}}" target = "_blank">{{i.platform}}</a></li>
-              {%endfor%}
-            </ol>
-           </div>
-           {%endif%}
-        </div>
+            </section>
+        </article>
     </div>
 </div>
 {% endblock %}

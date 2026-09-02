@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    
+    <!-- Premium Author Profile Card -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-lg rounded-lg overflow-hidden relative">
+                <!-- Cover Banner -->
+                <div class="bg-primary text-white p-5 text-center d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); min-height: 200px;">
+                    <!-- Optional cover graphic / empty spacer -->
+                </div>
+                
+                <!-- Avatar overlapping banner -->
+                <div class="text-center" style="margin-top: -75px;">
+                    {% if user_profile.profile_picture %}
+                        <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle img-thumbnail shadow border-white" style="width: 150px; height: 150px; object-fit: cover; border-width: 5px;">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ author.username }}&background=f59e0b&color=fff&size=200" alt="Avatar" class="rounded-circle img-thumbnail shadow border-white" style="width: 150px; height: 150px; border-width: 5px;">
+                    {% endif %}
+                </div>
+                
+                <div class="card-body text-center p-4 p-md-5 pt-4">
+                    <h1 class="display-4 font-weight-bold mb-1" style="font-family: var(--font-heading);">{{ author.get_full_name|default:author.username }}</h1>
+                    <p class="text-muted font-weight-bold mb-4">@{{ author.username }}</p>
+                    
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-auto text-center px-4 border-right">
+                            <h3 class="font-weight-bold text-dark mb-0">{{ followers_count }}</h3>
+                            <span class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 1px;">Followers</span>
+                        </div>
+                        <div class="col-auto text-center px-4">
+                            <h3 class="font-weight-bold text-dark mb-0">{{ following_count }}</h3>
+                            <span class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 1px;">Following</span>
+                        </div>
+                    </div>
+                    
+                    <p class="lead text-muted mx-auto mb-4" style="max-width: 600px; font-size: 1.15rem;">
+                        {{ user_profile.bio|default:"This author has not provided a bio yet." }}
+                    </p>
+                    
+                    <!-- Social Links -->
+                    <div class="d-flex justify-content-center mb-5">
+                        {% if user_profile.facebook_link %}
+                            <a href="{{ user_profile.facebook_link }}" target="_blank" class="btn btn-outline-primary rounded-circle mx-2 shadow-sm" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"><i class="fa fa-facebook fa-lg"></i></a>
+                        {% endif %}
+                        {% if user_profile.twitter_link %}
+                            <a href="{{ user_profile.twitter_link }}" target="_blank" class="btn btn-outline-info rounded-circle mx-2 shadow-sm" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"><i class="fa fa-twitter fa-lg"></i></a>
+                        {% endif %}
+                        {% if user_profile.instagram_link %}
+                            <a href="{{ user_profile.instagram_link }}" target="_blank" class="btn btn-outline-danger rounded-circle mx-2 shadow-sm" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"><i class="fa fa-instagram fa-lg"></i></a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Follow Button -->
+                    {% if request.user != author %}
+                        <form action="{% url 'follow_author' author.username %}" method="POST" class="d-inline-block">
+                            {% csrf_token %}
+                            {% if is_following %}
+                                <button type="submit" class="btn btn-outline-secondary btn-lg px-5 rounded-pill shadow-sm transition-transform font-weight-bold">
+                                    <i class="fa fa-check mr-2"></i> Unfollow
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm transition-transform font-weight-bold">
+                                    <i class="fa fa-user-plus mr-2"></i> Follow {{ author.get_short_name|default:author.username }}
+                                </button>
+                            {% endif %}
+                        </form>
+                    {% else %}
+                        <a href="{% url 'edit_profile' %}" class="btn btn-outline-dark btn-lg px-5 rounded-pill shadow-sm transition-transform font-weight-bold"><i class="fa fa-pencil mr-2"></i> Edit Profile</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Author's Blog Posts Grid -->
+    <div class="mt-5 pt-4 border-top">
+        <div class="d-flex align-items-center mb-5 pb-2">
+            <i class="fa fa-pencil-square-o text-warning fa-3x mr-3"></i>
+            <div>
+                <span class="text-muted text-uppercase font-weight-bold" style="letter-spacing: 2px;">Published By {{ author.get_short_name|default:author.username }}</span>
+                <h2 class="display-4 font-weight-bolder mb-0 text-dark" style="font-family: var(--font-heading); font-size: 2.5rem;">Articles ({{ author_blogs.count }})</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            {% if author_blogs %}
+                {% for post in author_blogs %}
+                <div class="col-md-6 mb-5">
+                  <div class="card border-0 h-100 shadow-sm bg-white rounded-lg transition-transform">
+                    {% if post.featured_image %}
+                    <div class="position-absolute p-3 z-index-2 w-100 d-flex justify-content-between">
+                        <span class="badge bg-warning text-dark shadow-sm px-3 py-2 text-uppercase"><i class="fa fa-hashtag mr-1"></i> {{ post.category }}</span>
+                    </div>
+                    <a href="{% url 'blogs' post.slug %}">
+                      <img src="{{ post.featured_image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 240px; object-fit: cover; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                    </a>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column p-4">
+                      <h3 class="mb-3" style="font-family: var(--font-heading);"><a href="{% url 'blogs' post.slug %}" class="text-dark font-weight-bold text-decoration-none">{{ post.title }}</a></h3>
+                      
+                      <div class="mb-3 d-flex align-items-center text-muted small pb-3 border-bottom">
+                        <span class="mr-auto"><i class="fa fa-clock-o text-warning"></i> {{ post.created_at|date:"M d, Y" }}</span>
+                        <span class="mr-3"><i class="fa fa-eye"></i> {{ post.views_count }}</span>
+                        <span><i class="fa fa-heart text-danger"></i> {{ post.likes.count }}</span>
+                      </div>
+
+                      <p class="card-text text-muted mb-4 flex-grow-1" style="font-size: 1.05rem;">{{ post.short_description|truncatewords:20 }}</p>
+                      
+                      <a href="{% url 'blogs' post.slug %}" class="btn btn-outline-primary btn-block rounded-pill text-uppercase font-weight-bold py-2">Read Article</a>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5 bg-white rounded shadow-sm border-0">
+                    <i class="fa fa-file-text-o fa-5x text-muted mb-4 opacity-50"></i>
+                    <h3 class="font-weight-bold text-dark mb-3">{{ author.get_short_name|default:author.username }} hasn't published anything yet.</h3>
+                    <p class="text-muted lead">Check back later for exciting content!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

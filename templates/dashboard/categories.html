@@ -26,7 +26,13 @@
     {% for cat in categories %}
     <tr>
       <td>{{forloop.counter }}</td>
-      <td>{{cat}}</td>
+      <td>
+  <a href="{% url 'posts_by_category' cat.id %}">
+    {{ cat }}
+  </a>
+</td>
+
+
       <td>{{cat.created_at}}</td>
       <td>{{cat.updated_at}}</td>
       <td> 
